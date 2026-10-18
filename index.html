@@ -1,0 +1,334 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#050b16">
+  <meta name="description" content="JARVIS, tu asistente personal">
+  <title>JARVIS - Asistente personal</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #102b4e, #050b16 65%);
+      color: #d8f5ff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .panel {
+      width: 100%;
+      max-width: 480px;
+      text-align: center;
+      border: 1px solid #1688bd;
+      border-radius: 24px;
+      padding: 28px 20px;
+      background: rgba(3, 14, 29, 0.88);
+      box-shadow: 0 0 35px #0879b855;
+    }
+
+    .marca {
+      color: #42d9ff;
+      letter-spacing: 7px;
+      font-size: 13px;
+    }
+
+    h1 {
+      font-size: 38px;
+      letter-spacing: 5px;
+      margin: 12px 0 5px;
+      text-shadow: 0 0 18px #00bfff;
+    }
+
+    .subtitulo {
+      color: #8bb9d4;
+      font-size: 14px;
+    }
+
+    .orbita {
+      margin: 30px auto 22px;
+      width: 180px;
+      height: 180px;
+      border: 2px solid #1688bd;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 25px #009dff55, inset 0 0 25px #009dff33;
+      position: relative;
+    }
+
+    .orbita::before,
+    .orbita::after {
+      content: "";
+      position: absolute;
+      border: 1px dashed #36cfff;
+      border-radius: 50%;
+    }
+
+    .orbita::before {
+      inset: 12px;
+    }
+
+    .orbita::after {
+      inset: 27px;
+    }
+
+    .nucleo {
+      width: 72px;
+      height: 72px;
+      background: #19c9ff;
+      border-radius: 50%;
+      box-shadow: 0 0 35px #00bfff;
+      z-index: 1;
+    }
+
+    .escuchando .nucleo {
+      animation: pulso 1s infinite alternate;
+    }
+
+    @keyframes pulso {
+      from { transform: scale(.8); opacity: .7; }
+      to { transform: scale(1.1); opacity: 1; }
+    }
+
+    .estado {
+      min-height: 24px;
+      color: #49dfff;
+      margin: 18px 0;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      border: 1px solid #29caff;
+      border-radius: 12px;
+      background: #073c5b;
+      color: #e5faff;
+      font-size: 16px;
+      font-weight: bold;
+      margin: 7px 0;
+      cursor: pointer;
+    }
+
+    button:active {
+      background: #0879a8;
+    }
+
+    .principal {
+      background: #087eae;
+    }
+
+    .entrada {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    input {
+      min-width: 0;
+      flex: 1;
+      padding: 13px;
+      border-radius: 10px;
+      border: 1px solid #1688bd;
+      background: #071729;
+      color: white;
+      font-size: 15px;
+    }
+
+    .entrada button {
+      width: auto;
+      margin: 0;
+      padding: 12px;
+    }
+
+    .respuesta {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 12px;
+      background: #071729;
+      border: 1px solid #145276;
+      text-align: left;
+      line-height: 1.5;
+      min-height: 55px;
+      overflow-wrap: anywhere;
+    }
+
+    .pie {
+      margin-top: 22px;
+      color: #648aa6;
+      font-size: 11px;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="panel">
+    <div class="marca">SISTEMA PERSONAL</div>
+    <h1>J.A.R.V.I.S.</h1>
+    <div class="subtitulo">Just A Rather Very Intelligent System</div>
+
+    <div class="orbita" id="orbita">
+      <div class="nucleo"></div>
+    </div>
+
+    <div class="estado" id="estado">Sistema listo para iniciar</div>
+
+    <button class="principal" id="voz">🎙️ HABLAR CON JARVIS</button>
+    <button id="prueba">🔊 PROBAR VOZ</button>
+
+    <div class="entrada">
+      <input id="mensaje" type="text" placeholder="Escribí un comando...">
+      <button id="enviar">Enviar</button>
+    </div>
+
+    <div class="respuesta" id="respuesta">
+      JARVIS: Buen día. Estoy listo para ayudarte.
+    </div>
+
+    <div class="pie">
+      JARVIS PERSONAL · PROTOTIPO 1.0
+    </div>
+  </main>
+
+  <script>
+    const estado = document.getElementById("estado");
+    const respuesta = document.getElementById("respuesta");
+    const orbita = document.getElementById("orbita");
+    const botonVoz = document.getElementById("voz");
+    const mensaje = document.getElementById("mensaje");
+
+    function hablar(texto) {
+      respuesta.textContent = "JARVIS: " + texto;
+
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+
+        const voz = new SpeechSynthesisUtterance(texto);
+        voz.lang = "es-AR";
+        voz.rate = 1;
+        voz.pitch = 0.9;
+
+        window.speechSynthesis.speak(voz);
+      }
+    }
+
+    function ejecutarComando(texto) {
+      const comando = texto.toLowerCase().trim();
+
+      if (!comando) {
+        hablar("No recibí ningún comando.");
+        return;
+      }
+
+      estado.textContent = "Procesando comando...";
+
+      if (comando.includes("hola")) {
+        hablar("Hola. Soy JARVIS, tu asistente personal. ¿En qué puedo ayudarte?");
+      } else if (comando.includes("cómo estás") || comando.includes("como estas")) {
+        hablar("Todos los sistemas funcionan correctamente. Gracias por preguntar.");
+      } else if (comando.includes("hora")) {
+        const hora = new Date().toLocaleTimeString("es-AR", {
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+        hablar("La hora actual es " + hora);
+      } else if (comando.includes("fecha") || comando.includes("día es") || comando.includes("dia es")) {
+        const fecha = new Date().toLocaleDateString("es-AR", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric"
+        });
+        hablar("Hoy es " + fecha);
+      } else if (comando.includes("youtube")) {
+        hablar("Abriendo YouTube.");
+        window.open("https://www.youtube.com", "_blank");
+      } else if (comando.includes("google")) {
+        hablar("Abriendo Google.");
+        window.open("https://www.google.com", "_blank");
+      } else if (comando.includes("ayuda") || comando.includes("qué puedes hacer") || comando.includes("que puedes hacer")) {
+        hablar("Puedo decirte la hora y la fecha, saludarte, responder algunos comandos y abrir YouTube o Google. Esta es mi primera versión.");
+      } else if (comando.includes("quién eres") || comando.includes("quien eres")) {
+        hablar("Soy JARVIS, tu asistente personal en desarrollo.");
+      } else if (comando.includes("gracias")) {
+        hablar("Siempre a tu disposición.");
+      } else {
+        hablar("Todavía no conozco ese comando. Probá decir hora, fecha, abrir YouTube o ayuda.");
+      }
+
+      estado.textContent = "Sistema listo";
+    }
+
+    function iniciarReconocimiento() {
+      const Reconocimiento =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+
+      if (!Reconocimiento) {
+        estado.textContent = "Reconocimiento de voz no disponible";
+        hablar("Tu navegador no admite el reconocimiento de voz aquí. Probá con Google Chrome actualizado o escribí el comando.");
+        return;
+      }
+
+      const reconocimiento = new Reconocimiento();
+      reconocimiento.lang = "es-AR";
+      reconocimiento.continuous = false;
+      reconocimiento.interimResults = false;
+
+      reconocimiento.onstart = () => {
+        estado.textContent = "Escuchando...";
+        orbita.classList.add("escuchando");
+      };
+
+      reconocimiento.onresult = (evento) => {
+        const texto = evento.results[0][0].transcript;
+        mensaje.value = texto;
+        ejecutarComando(texto);
+      };
+
+      reconocimiento.onerror = () => {
+        estado.textContent = "No pude reconocer la voz";
+        respuesta.textContent = "JARVIS: Probá de nuevo o escribí tu comando.";
+      };
+
+      reconocimiento.onend = () => {
+        orbita.classList.remove("escuchando");
+        if (estado.textContent === "Escuchando...") {
+          estado.textContent = "Sistema listo";
+        }
+      };
+
+      try {
+        reconocimiento.start();
+      } catch (error) {
+        estado.textContent = "Esperando para volver a intentar";
+      }
+    }
+
+    botonVoz.addEventListener("click", iniciarReconocimiento);
+
+    document.getElementById("enviar").addEventListener("click", () => {
+      ejecutarComando(mensaje.value);
+    });
+
+    mensaje.addEventListener("keydown", (evento) => {
+      if (evento.key === "Enter") {
+        ejecutarComando(mensaje.value);
+      }
+    });
+
+    document.getElementById("prueba").addEventListener("click", () => {
+      hablar("Prueba de audio correcta. JARVIS está listo.");
+    });
+  </script>
+</body>
+</html>
